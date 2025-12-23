@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,23 +7,142 @@ const corsHeaders = {
 };
 
 const jobRoleDescriptions: Record<string, string> = {
-  // Corporate Roles
-  "Manager": "Leadership, decision-making, team coordination, strategic planning",
-  "Software Developer": "Analytical thinking, problem-solving, attention to detail, creativity in technical solutions",
-  "Sales Executive": "Communication, persuasion, relationship building, resilience",
-  "HR Professional": "Empathy, conflict resolution, organizational skills, people management",
-  "Finance Analyst": "Numerical aptitude, attention to detail, analytical thinking, risk assessment",
-  "Marketing Specialist": "Creativity, communication, trend awareness, strategic thinking",
-  "Operations Manager": "Process optimization, multitasking, leadership, efficiency focus",
-  // Industry-Specific Roles
-  "Doctor": "Precision, empathy, analytical thinking, patience, dedication",
-  "Lawyer": "Logic, argumentation, attention to detail, persuasion, ethics",
-  "Engineer": "Problem-solving, technical aptitude, precision, innovation",
-  "Teacher": "Patience, communication, empathy, knowledge sharing, adaptability",
-  "Artist": "Creativity, emotional expression, intuition, originality",
-  "Entrepreneur": "Risk-taking, innovation, leadership, resilience, vision",
-  "Researcher": "Curiosity, attention to detail, patience, analytical thinking",
-  "Consultant": "Problem-solving, communication, adaptability, strategic thinking"
+  // Executive Leadership
+  "CEO": "Visionary leadership, strategic decision-making, stakeholder management, business acumen, charisma",
+  "CTO": "Technology vision, innovation leadership, technical expertise, strategic planning, team building",
+  "CFO": "Financial strategy, risk management, analytical thinking, regulatory compliance, investor relations",
+  "COO": "Operations excellence, process optimization, execution focus, resource management, efficiency",
+  "CMO": "Marketing strategy, brand building, customer insights, creative vision, market analysis",
+  "CHRO": "People strategy, organizational development, talent management, culture building, leadership",
+  "CIO": "IT strategy, digital transformation, technology governance, innovation, security awareness",
+  "VP": "Strategic leadership, cross-functional collaboration, business development, team leadership",
+  "Director": "Department leadership, strategic planning, resource allocation, performance management",
+  
+  // Management
+  "General Manager": "Overall business management, P&L responsibility, strategic execution, team leadership",
+  "Project Manager": "Project planning, risk management, stakeholder communication, resource coordination",
+  "Product Manager": "Product strategy, market analysis, cross-functional leadership, user focus",
+  "Operations Manager": "Process optimization, efficiency, quality control, resource management",
+  "HR Manager": "People management, policy development, employee relations, talent acquisition",
+  "Finance Manager": "Financial planning, budgeting, reporting, compliance, team leadership",
+  "Marketing Manager": "Marketing strategy, campaign management, brand development, analytics",
+  "Sales Manager": "Sales strategy, team motivation, pipeline management, client relationships",
+  "IT Manager": "IT operations, team leadership, vendor management, infrastructure planning",
+  "Quality Manager": "Quality standards, process improvement, compliance, inspection management",
+  "Supply Chain Manager": "Logistics, vendor relations, inventory management, cost optimization",
+  
+  // Technology
+  "Software Engineer": "Coding, problem-solving, system design, collaboration, continuous learning",
+  "Data Scientist": "Statistical analysis, machine learning, data visualization, business insights",
+  "DevOps Engineer": "Automation, CI/CD, cloud infrastructure, monitoring, collaboration",
+  "Cloud Architect": "Cloud strategy, system design, scalability, security, cost optimization",
+  "Cybersecurity Analyst": "Security analysis, threat detection, risk assessment, compliance",
+  "UI/UX Designer": "User research, visual design, prototyping, usability, empathy",
+  "Database Administrator": "Database management, performance tuning, backup, security",
+  "QA Engineer": "Testing, automation, quality assurance, attention to detail, documentation",
+  "Technical Lead": "Technical leadership, architecture decisions, mentoring, code quality",
+  "System Administrator": "System maintenance, troubleshooting, security, automation",
+  
+  // Finance
+  "Accountant": "Financial accuracy, compliance, reporting, attention to detail, ethics",
+  "Financial Analyst": "Financial modeling, forecasting, analysis, presentation, business acumen",
+  "Investment Banker": "Deal-making, financial analysis, client relations, market knowledge",
+  "Auditor": "Compliance, investigation, attention to detail, integrity, reporting",
+  "Tax Specialist": "Tax planning, compliance, research, client advisory, accuracy",
+  "Treasury Analyst": "Cash management, risk assessment, financial planning, banking relations",
+  "Risk Analyst": "Risk assessment, modeling, compliance, analytical thinking, reporting",
+  "Credit Analyst": "Credit assessment, financial analysis, risk evaluation, decision-making",
+  
+  // Sales
+  "Sales Executive": "Persuasion, relationship building, negotiation, target achievement, resilience",
+  "Business Development": "Opportunity identification, relationship building, strategic partnerships",
+  "Account Manager": "Client management, relationship building, problem-solving, retention",
+  "Sales Representative": "Communication, product knowledge, customer focus, persistence",
+  "Key Account Manager": "Strategic account management, executive relationships, value creation",
+  "Territory Manager": "Territory planning, market development, relationship management",
+  
+  // Marketing
+  "Digital Marketer": "Digital strategy, analytics, campaign management, content creation",
+  "Content Strategist": "Content planning, storytelling, audience understanding, creativity",
+  "SEO Specialist": "Search optimization, analytics, technical SEO, content optimization",
+  "Brand Manager": "Brand strategy, market positioning, campaign development, consistency",
+  "Social Media Manager": "Social strategy, community engagement, content creation, analytics",
+  "Marketing Analyst": "Data analysis, market research, insights, reporting, strategy support",
+  "Public Relations": "Media relations, crisis management, communication, reputation building",
+  "Event Manager": "Event planning, coordination, vendor management, creativity, execution",
+  
+  // Human Resources
+  "HR Generalist": "HR operations, employee relations, policy implementation, versatility",
+  "Recruiter": "Talent sourcing, interviewing, candidate experience, networking",
+  "Training Manager": "Learning design, facilitation, development programs, assessment",
+  "Compensation Analyst": "Compensation analysis, benchmarking, benefits administration",
+  "Employee Relations": "Conflict resolution, policy compliance, employee advocacy, mediation",
+  "HR Business Partner": "Strategic HR, business alignment, consulting, change management",
+  
+  // Operations
+  "Operations Analyst": "Process analysis, efficiency improvement, data analysis, reporting",
+  "Logistics Coordinator": "Logistics planning, coordination, vendor management, problem-solving",
+  "Procurement Specialist": "Vendor negotiation, cost optimization, supplier management",
+  "Facilities Manager": "Facility operations, maintenance, safety, vendor management",
+  "Process Improvement": "Process optimization, lean/six sigma, change management, analysis",
+  "Warehouse Manager": "Inventory management, team leadership, logistics, safety compliance",
+  
+  // Legal
+  "Corporate Lawyer": "Legal expertise, negotiation, risk assessment, contract drafting",
+  "Legal Counsel": "Legal advisory, compliance, contract review, risk management",
+  "Compliance Officer": "Regulatory compliance, policy development, risk assessment, ethics",
+  "Contract Manager": "Contract negotiation, drafting, compliance, vendor management",
+  "Paralegal": "Legal research, documentation, case preparation, attention to detail",
+  
+  // Healthcare
+  "Doctor": "Medical expertise, diagnosis, patient care, empathy, continuous learning",
+  "Nurse": "Patient care, attention to detail, empathy, teamwork, resilience",
+  "Pharmacist": "Pharmaceutical knowledge, patient safety, attention to detail, counseling",
+  "Medical Administrator": "Healthcare operations, compliance, team management, efficiency",
+  "Healthcare Consultant": "Healthcare expertise, analysis, strategy, problem-solving",
+  
+  // Creative
+  "Graphic Designer": "Visual creativity, technical skills, attention to detail, brand understanding",
+  "Video Producer": "Video production, storytelling, technical skills, project management",
+  "Copywriter": "Writing, creativity, brand voice, persuasion, research",
+  "Creative Director": "Creative vision, team leadership, brand strategy, innovation",
+  "Photographer": "Visual storytelling, technical skills, creativity, attention to detail",
+  "Art Director": "Visual direction, creativity, team leadership, brand consistency",
+  
+  // Education
+  "Teacher": "Teaching, patience, communication, adaptability, subject expertise",
+  "Professor": "Academic expertise, research, teaching, mentoring, publication",
+  "Corporate Trainer": "Training delivery, content development, engagement, assessment",
+  "Academic Administrator": "Educational leadership, administration, policy, student focus",
+  "Instructional Designer": "Learning design, technology, content creation, assessment",
+  
+  // Consulting
+  "Management Consultant": "Problem-solving, analysis, client management, presentation",
+  "Strategy Consultant": "Strategic thinking, analysis, frameworks, client advisory",
+  "IT Consultant": "Technology expertise, problem-solving, client management, implementation",
+  "Financial Consultant": "Financial analysis, advisory, client relations, market knowledge",
+  "HR Consultant": "HR expertise, organizational development, change management, advisory",
+  
+  // Entrepreneurship
+  "Entrepreneur": "Vision, risk-taking, resilience, innovation, leadership, adaptability",
+  "Startup Founder": "Innovation, leadership, fundraising, product vision, team building",
+  "Business Owner": "Business acumen, leadership, financial management, customer focus",
+  "Freelancer": "Self-management, client relations, expertise, adaptability, marketing",
+  "Investor": "Financial analysis, risk assessment, network building, due diligence",
+  
+  // Research
+  "Research Scientist": "Scientific method, analysis, documentation, innovation, patience",
+  "Market Researcher": "Research methodology, data analysis, insights, presentation",
+  "Data Analyst": "Data analysis, visualization, statistical thinking, communication",
+  "Research Associate": "Research support, data collection, analysis, documentation",
+  "Policy Analyst": "Policy research, analysis, writing, stakeholder engagement",
+  
+  // Customer Service
+  "Customer Success Manager": "Client relationships, retention, problem-solving, communication",
+  "Support Specialist": "Problem-solving, patience, technical knowledge, communication",
+  "Client Relations": "Relationship building, communication, account management, retention",
+  "Technical Support": "Technical knowledge, problem-solving, patience, documentation",
+  "Call Center Manager": "Team leadership, metrics, customer focus, process improvement",
 };
 
 serve(async (req) => {
@@ -76,25 +196,70 @@ Provide your analysis in the following JSON format exactly:
     "mercuryLine": { "observation": "<what you observe>", "interpretation": "<career relevance>" }
   },
   "personalityTraits": ["<trait1>", "<trait2>", "<trait3>", "<trait4>", "<trait5>"],
-  "strengths": ["<strength1>", "<strength2>", "<strength3>"],
-  "weaknesses": ["<weakness1>", "<weakness2>"],
+  "strengths": ["<strength1>", "<strength2>", "<strength3>", "<strength4>", "<strength5>"],
+  "weaknesses": ["<weakness1>", "<weakness2>", "<weakness3>"],
   "alternativeRoles": [
     { "role": "<role1>", "compatibility": <number>, "reason": "<brief reason>" },
     { "role": "<role2>", "compatibility": <number>, "reason": "<brief reason>" },
     { "role": "<role3>", "compatibility": <number>, "reason": "<brief reason>" }
   ],
-  "astrologicalReasoning": "<2-3 sentences explaining the traditional Indian astrology principles behind your assessment>"
+  "astrologicalReasoning": "<2-3 sentences explaining the traditional Indian astrology principles behind your assessment>",
+  "behavioralAnalysis": {
+    "overallBehavior": "<detailed description of typical behavior patterns based on palm reading>",
+    "emotionalIntelligence": "<assessment of EQ based on heart line and other indicators>",
+    "stressResponse": "<how this person likely handles stress and pressure>",
+    "adaptability": "<ability to adapt to change and new situations>",
+    "decisionMakingStyle": "<analytical vs intuitive, fast vs deliberate>"
+  },
+  "workplaceDynamics": {
+    "relationshipWithColleagues": "<how they interact with peers and team members>",
+    "teamworkCapability": "<ability to work in teams, collaboration style>",
+    "leadershipPotential": "<natural leadership abilities and potential>",
+    "communicationStyle": "<how they communicate - direct, diplomatic, assertive, etc.>",
+    "conflictResolution": "<how they handle workplace conflicts>"
+  },
+  "careerGrowth": {
+    "growthPotential": "<overall career growth potential assessment>",
+    "careerTrajectory": "<predicted career path and progression>",
+    "hurdles": ["<obstacle1>", "<obstacle2>", "<obstacle3>"],
+    "successFactors": ["<factor1>", "<factor2>", "<factor3>"],
+    "timelineProjection": "<when they might reach significant milestones>"
+  },
+  "workCapabilities": {
+    "bestTaskTypes": ["<task1>", "<task2>", "<task3>", "<task4>"],
+    "idealWorkEnvironment": "<type of work setting where they thrive>",
+    "productivityPeaks": "<when and how they work best>",
+    "skillsToLeverage": ["<skill1>", "<skill2>", "<skill3>"],
+    "areasOfExcellence": ["<area1>", "<area2>", "<area3>"]
+  },
+  "jobChangeAnalysis": {
+    "likelihoodToChange": "<Low | Moderate | High> - with percentage estimate",
+    "reasonsForChange": ["<reason1>", "<reason2>", "<reason3>"],
+    "idealNextRole": "<what role they would naturally gravitate towards>",
+    "retentionFactors": ["<what would keep them>", "<factor2>", "<factor3>"],
+    "loyaltyIndicators": "<assessment of loyalty and commitment tendencies>"
+  }
 }
 
-Be detailed but concise. Base your analysis on visible palm characteristics and provide practical, actionable insights.`;
+Be detailed and insightful. Base your analysis on visible palm characteristics and provide practical, actionable insights relevant to corporate and professional settings.`;
 
     const userPrompt = `Analyze this palm image for the role of "${selectedRole}".
 
 The key requirements for this role are: ${roleDescription}
 
-Please provide a comprehensive analysis of whether this candidate's palm indicates suitability for this position based on Indian palmistry (Samudrika Shastra) principles.`;
+Please provide a comprehensive and detailed analysis including:
+1. Basic compatibility score and verdict
+2. Detailed palm line analysis
+3. Personality traits, strengths, and weaknesses
+4. Behavioral patterns and emotional intelligence
+5. Workplace dynamics and relationship with colleagues
+6. Career growth potential, hurdles, and timeline
+7. Work capabilities and areas of excellence
+8. Job change likelihood and retention factors
 
-    console.log("Sending request to Lovable AI for palm analysis...");
+Base everything on Indian palmistry (Samudrika Shastra) principles.`;
+
+    console.log("Sending request to Lovable AI (gemini-2.5-flash-lite) for palm analysis...");
     console.log("Selected role:", selectedRole);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -104,7 +269,7 @@ Please provide a comprehensive analysis of whether this candidate's palm indicat
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: systemPrompt },
           { 
@@ -170,13 +335,55 @@ Please provide a comprehensive analysis of whether this candidate's palm indicat
       );
     }
 
+    // Save to database
+    let shareId = null;
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        const { data: insertData, error: insertError } = await supabase
+          .from('palm_reports')
+          .insert({
+            selected_role: selectedRole,
+            compatibility_score: analysisResult.compatibilityScore,
+            verdict: analysisResult.verdict,
+            palm_line_analysis: analysisResult.palmLineAnalysis,
+            personality_traits: analysisResult.personalityTraits,
+            strengths: analysisResult.strengths,
+            weaknesses: analysisResult.weaknesses,
+            alternative_roles: analysisResult.alternativeRoles,
+            astrological_reasoning: analysisResult.astrologicalReasoning,
+            behavioral_analysis: analysisResult.behavioralAnalysis,
+            workplace_dynamics: analysisResult.workplaceDynamics,
+            career_growth: analysisResult.careerGrowth,
+            work_capabilities: analysisResult.workCapabilities,
+            job_change_analysis: analysisResult.jobChangeAnalysis,
+          })
+          .select('share_id')
+          .single();
+        
+        if (insertError) {
+          console.error("Error saving report:", insertError);
+        } else {
+          shareId = insertData?.share_id;
+          console.log("Report saved with share_id:", shareId);
+        }
+      }
+    } catch (dbError) {
+      console.error("Database error:", dbError);
+    }
+
     console.log("Analysis completed successfully");
     
     return new Response(
       JSON.stringify({ 
         success: true, 
         analysis: analysisResult,
-        selectedRole 
+        selectedRole,
+        shareId
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -6,6 +6,7 @@ export function usePalmAnalysis() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<PalmAnalysisResult | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("");
+  const [shareId, setShareId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const analyzePalm = useCallback(async (imageBase64: string, role: string) => {
@@ -21,6 +22,7 @@ export function usePalmAnalysis() {
     setIsAnalyzing(true);
     setResult(null);
     setSelectedRole(role);
+    setShareId(null);
 
     try {
       const response = await fetch(
@@ -54,6 +56,7 @@ export function usePalmAnalysis() {
       }
 
       setResult(data.analysis);
+      setShareId(data.shareId || null);
       
       toast({
         title: "Analysis Complete",
@@ -77,12 +80,14 @@ export function usePalmAnalysis() {
   const resetAnalysis = useCallback(() => {
     setResult(null);
     setSelectedRole("");
+    setShareId(null);
   }, []);
 
   return {
     isAnalyzing,
     result,
     selectedRole,
+    shareId,
     analyzePalm,
     resetAnalysis,
   };
