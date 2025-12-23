@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -52,7 +52,7 @@ export function GenerateReport() {
   };
 
   // Restore state after payment redirect
-  useState(() => {
+  useEffect(() => {
     const pending = sessionStorage.getItem("palmveda_pending_analysis");
     if (pending) {
       try {
@@ -66,7 +66,7 @@ export function GenerateReport() {
         console.error("Failed to restore pending analysis:", e);
       }
     }
-  });
+  }, []);
 
   // Show results if available
   if (result) {
