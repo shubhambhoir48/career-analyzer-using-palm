@@ -29,6 +29,7 @@ export type Database = {
           selected_role: string
           share_id: string
           strengths: string[]
+          user_id: string | null
           verdict: string
           weaknesses: string[]
           work_capabilities: Json
@@ -48,6 +49,7 @@ export type Database = {
           selected_role: string
           share_id?: string
           strengths: string[]
+          user_id?: string | null
           verdict: string
           weaknesses: string[]
           work_capabilities: Json
@@ -67,10 +69,85 @@ export type Database = {
           selected_role?: string
           share_id?: string
           strengths?: string[]
+          user_id?: string | null
           verdict?: string
           weaknesses?: string[]
           work_capabilities?: Json
           workplace_dynamics?: Json
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          razorpay_order_id: string
+          razorpay_payment_id: string | null
+          report_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          razorpay_order_id: string
+          razorpay_payment_id?: string | null
+          report_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          razorpay_order_id?: string
+          razorpay_payment_id?: string | null
+          report_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "palm_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
