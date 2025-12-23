@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      palm_reports: {
+        Row: {
+          alternative_roles: Json
+          astrological_reasoning: string
+          behavioral_analysis: Json
+          career_growth: Json
+          compatibility_score: number
+          created_at: string
+          id: string
+          job_change_analysis: Json
+          palm_line_analysis: Json
+          personality_traits: string[]
+          selected_role: string
+          share_id: string
+          strengths: string[]
+          verdict: string
+          weaknesses: string[]
+          work_capabilities: Json
+          workplace_dynamics: Json
+        }
+        Insert: {
+          alternative_roles: Json
+          astrological_reasoning: string
+          behavioral_analysis: Json
+          career_growth: Json
+          compatibility_score: number
+          created_at?: string
+          id?: string
+          job_change_analysis: Json
+          palm_line_analysis: Json
+          personality_traits: string[]
+          selected_role: string
+          share_id?: string
+          strengths: string[]
+          verdict: string
+          weaknesses: string[]
+          work_capabilities: Json
+          workplace_dynamics: Json
+        }
+        Update: {
+          alternative_roles?: Json
+          astrological_reasoning?: string
+          behavioral_analysis?: Json
+          career_growth?: Json
+          compatibility_score?: number
+          created_at?: string
+          id?: string
+          job_change_analysis?: Json
+          palm_line_analysis?: Json
+          personality_traits?: string[]
+          selected_role?: string
+          share_id?: string
+          strengths?: string[]
+          verdict?: string
+          weaknesses?: string[]
+          work_capabilities?: Json
+          workplace_dynamics?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
