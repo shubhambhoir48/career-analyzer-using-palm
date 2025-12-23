@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { PalmAnalysisResult, AnalysisResponse } from "@/types/palm-analysis";
+import { supabase } from "@/integrations/supabase/client";
 
 export function usePalmAnalysis() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -8,6 +9,62 @@ export function usePalmAnalysis() {
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [shareId, setShareId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const sendReportEmail = useCallback(async (
+    analysisResult: PalmAnalysisResult,
+    role: string,
+    reportShareId: string
+  ) => {
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.email) {
+        console.log("No user email found, skipping email notification");
+        return;
+      }
+
+      // Get user profile for full name
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const reportUrl = `${window.location.origin}/report/${reportShareId}`;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-report-email`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: user.email,
+            fullName: profile?.full_name,
+            selectedRole: role,
+            compatibilityScore: analysisResult.compatibilityScore,
+            verdict: analysisResult.verdict,
+            shareId: reportShareId,
+            reportUrl,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Report email sent successfully");
+        toast({
+          title: "Email Sent",
+          description: "Report has been sent to your email.",
+        });
+      } else {
+        console.error("Failed to send report email");
+      }
+    } catch (error) {
+      console.error("Error sending report email:", error);
+    }
+  }, [toast]);
 
   const analyzePalm = useCallback(async (imageBase64: string, role: string) => {
     if (!imageBase64 || !role) {
@@ -63,6 +120,11 @@ export function usePalmAnalysis() {
         description: `Compatibility score: ${data.analysis.compatibilityScore}%`,
       });
 
+      // Send email notification in background
+      if (data.shareId) {
+        sendReportEmail(data.analysis, role, data.shareId);
+      }
+
       return data.analysis;
     } catch (error) {
       console.error("Palm analysis error:", error);
@@ -75,7 +137,7 @@ export function usePalmAnalysis() {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [toast]);
+  }, [toast, sendReportEmail]);
 
   const resetAnalysis = useCallback(() => {
     setResult(null);
