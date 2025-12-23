@@ -53,14 +53,17 @@ export function GenerateReport() {
 
   // Restore state after payment redirect
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentSuccess = urlParams.get("payment") === "success";
     const pending = sessionStorage.getItem("palmveda_pending_analysis");
-    if (pending) {
+    
+    if (pending && paymentSuccess) {
       try {
         const { palmImage: savedImage, selectedRole: savedRole } = JSON.parse(pending);
         if (savedImage) setPalmImage(savedImage);
         if (savedRole) setSelectedRole(savedRole);
         setStep(3); // Move to payment step
-        setHasPaid(true); // Assume paid if coming back
+        setHasPaid(true); // Mark as paid
         sessionStorage.removeItem("palmveda_pending_analysis");
       } catch (e) {
         console.error("Failed to restore pending analysis:", e);
