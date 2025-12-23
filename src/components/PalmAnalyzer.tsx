@@ -13,7 +13,7 @@ export function PalmAnalyzer() {
   const [palmImage, setPalmImage] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
   
-  const { isAnalyzing, result, analyzePalm, resetAnalysis } = usePalmAnalysis();
+  const { isAnalyzing, result, shareId, analyzePalm, resetAnalysis } = usePalmAnalysis();
 
   const handleAnalyze = async () => {
     if (palmImage && selectedRole) {
@@ -37,6 +37,7 @@ export function PalmAnalyzer() {
             result={result}
             selectedRole={selectedRole}
             onReset={handleReset}
+            shareId={shareId}
           />
         </div>
       </section>
