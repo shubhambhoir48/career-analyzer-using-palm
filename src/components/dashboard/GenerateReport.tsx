@@ -8,8 +8,8 @@ import { AnalysisResults } from "@/components/AnalysisResults";
 import { usePalmAnalysis } from "@/hooks/usePalmAnalysis";
 import { Sparkles, ChevronRight, ChevronLeft, CreditCard, ExternalLink } from "lucide-react";
 
-// Replace this with your Razorpay Payment Page URL
-const RAZORPAY_PAYMENT_PAGE_URL = "";
+// Razorpay Payment Page URL
+const RAZORPAY_PAYMENT_PAGE_URL = "https://rzp.io/rzp/CSm4KaL";
 
 export function GenerateReport() {
   const [step, setStep] = useState(1);
