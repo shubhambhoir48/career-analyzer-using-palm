@@ -1,12 +1,35 @@
-import { Hand, Sparkles, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Hand, Sparkles, Eye, LogIn, LayoutDashboard } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 export function HeroSection() {
+  const navigate = useNavigate();
+  const { isAuthenticated, loading } = useAuthContext();
+
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-warm" />
       <div className="absolute top-20 left-10 w-72 h-72 bg-mystic/10 rounded-full blur-3xl animate-pulse-glow" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-gold/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }} />
+      
+      {/* Auth buttons */}
+      <div className="absolute top-4 right-4 z-20">
+        {!loading && (
+          isAuthenticated ? (
+            <Button onClick={() => navigate("/dashboard")} className="gap-2">
+              <LayoutDashboard className="w-4 h-4" />
+              Dashboard
+            </Button>
+          ) : (
+            <Button onClick={() => navigate("/auth")} variant="outline" className="gap-2">
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Button>
+          )
+        )}
+      </div>
       
       <div className="container relative z-10 mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
